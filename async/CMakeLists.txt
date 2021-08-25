@@ -17,4 +17,4 @@ message(STATUS "GTEST_BOTH_LIBRARIES: ${GTEST_BOTH_LIBRARIES}")
 message(STATUS "GTEST_LIBRARIES: ${GTEST_LIBRARIES}")
 message(STATUS "GTEST_MAIN_LIBRARIES: ${GTEST_MAIN_LIBRARIES}")
 
-target_link_libraries(async_test GTest::gtest GTest::gtest_main)
+target_link_libraries(async_test ${GTEST_LIBRARIES})
