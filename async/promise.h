@@ -48,16 +48,16 @@ namespace async {
         // Other possible situations include cancel/failure/timout
         bool ok() { return _ok; }
 
-        std::shared_ptr <T> outcome() { return _outcome; }
+        std::shared_ptr<T> outcome() { return _outcome; }
 
         const std::string &message() { return _message; }
 
     private:
-        PromiseOutcome(bool ok, std::shared_ptr <T> outcome, std::string message)
+        PromiseOutcome(bool ok, std::shared_ptr<T> outcome, std::string message)
                 : _ok(ok), _outcome(outcome), _message(std::move(message)) {}
 
         bool _ok;
-        std::shared_ptr <T> _outcome;
+        std::shared_ptr<T> _outcome;
         std::string _message;
     };
 
@@ -96,7 +96,7 @@ namespace async {
         // Try to mark this promise as succeeded, and there are only one of these method calls can succeed,
         // including try_success/try_failure/try_cancel
         // this method will trigger all listeners if necessary
-        bool try_success(std::shared_ptr <T> outcome);
+        bool try_success(std::shared_ptr<T> outcome);
 
         // Try to mark this promise as failed, and there are only one of these method calls can succeed,
         // including try_success/try_failure/try_cancel
@@ -106,7 +106,7 @@ namespace async {
         // Add listener to this promise
         // Guarantee: no matter when the listener added to the promise, listener will be trigger exactly
         // once as long as promise finished(success/failure/cancel all means finished)
-        Promise<T> &add_listener(std::shared_ptr <PromiseListener> listener);
+        Promise<T> &add_listener(std::shared_ptr<PromiseListener> listener);
 
         // Waits promise to be done, including three cases success/failure/cancel
         // 1. PromiseOutcome.ok() == true means promise is success, and you can fetch outcome by calling
@@ -128,26 +128,26 @@ namespace async {
         volatile bool _is_success = false;
         volatile bool _is_failure = false;
         std::string _cause;
-        std::shared_ptr <T> _outcome;
+        std::shared_ptr<T> _outcome;
 
-        std::vector <std::shared_ptr<PromiseListenerWrapper<T>>> _listeners;
+        std::vector<std::shared_ptr<PromiseListenerWrapper<T>>> _listeners;
         std::mutex _listener_lock;
         std::mutex _main_lock;
         std::condition_variable _complete_cv;
 
         bool execute_synchronous_under_lock_for_bool(
-                const std::function<bool(std::unique_lock < std::mutex > &)> &callable);
+                const std::function<bool(std::unique_lock<std::mutex> &)> &callable);
 
         PromiseOutcome<T> execute_synchronous_under_lock_for_outcome(
-                const std::function<PromiseOutcome<T>(std::unique_lock < std::mutex > &)> &callable);
+                const std::function<PromiseOutcome<T>(std::unique_lock<std::mutex> &)> &callable);
 
-        void add_listener0(std::shared_ptr <PromiseListener> listener);
+        void add_listener0(std::shared_ptr<PromiseListener> listener);
 
         void notify_all_listeners();
 
         void set_canceled_under_lock();
 
-        void set_success_under_lock(std::shared_ptr <T> outcome);
+        void set_success_under_lock(std::shared_ptr<T> outcome);
 
         void set_failure_under_lock(const std::string &cause);
 
@@ -161,7 +161,7 @@ namespace async {
     private:
         using PromiseListener = std::function<void(Promise<T> &)>;
 
-        std::shared_ptr <PromiseListener> _target;
+        std::shared_ptr<PromiseListener> _target;
         bool _is_triggerred = false;
         std::mutex _lock;
 
@@ -171,7 +171,7 @@ namespace async {
             }
 
             // guarantee _target only trigger once
-            std::unique_lock <std::mutex> l(_lock);
+            std::unique_lock<std::mutex> l(_lock);
             if (_is_triggerred) {
                 return;
             }
@@ -180,7 +180,7 @@ namespace async {
         }
 
     public:
-        explicit PromiseListenerWrapper(std::shared_ptr <PromiseListener> target) : _target(target) {}
+        explicit PromiseListenerWrapper(std::shared_ptr<PromiseListener> target) : _target(target) {}
     };
 
     template<typename T>
@@ -190,7 +190,7 @@ namespace async {
         }
 
         bool result = execute_synchronous_under_lock_for_bool(
-                [this](std::unique_lock <std::mutex> &l) -> bool {
+                [this](std::unique_lock<std::mutex> &l) -> bool {
                     if (is_done()) {
                         return false;
                     }
@@ -206,13 +206,13 @@ namespace async {
     }
 
     template<typename T>
-    bool Promise<T>::try_success(std::shared_ptr <T> outcome) {
+    bool Promise<T>::try_success(std::shared_ptr<T> outcome) {
         if (is_done()) {
             return false;
         }
 
         bool result = execute_synchronous_under_lock_for_bool(
-                [this, outcome](std::unique_lock <std::mutex> &l) -> bool {
+                [this, outcome](std::unique_lock<std::mutex> &l) -> bool {
                     if (is_done()) {
                         return false;
                     }
@@ -234,7 +234,7 @@ namespace async {
         }
 
         bool result = execute_synchronous_under_lock_for_bool(
-                [this, cause](std::unique_lock <std::mutex> &l) -> bool {
+                [this, cause](std::unique_lock<std::mutex> &l) -> bool {
                     if (is_done()) {
                         return false;
                     }
@@ -250,7 +250,7 @@ namespace async {
     }
 
     template<typename T>
-    Promise<T> &Promise<T>::add_listener(std::shared_ptr <PromiseListener> listener) {
+    Promise<T> &Promise<T>::add_listener(std::shared_ptr<PromiseListener> listener) {
         add_listener0(listener);
 
         if (is_done()) {
@@ -267,7 +267,7 @@ namespace async {
         }
 
         return execute_synchronous_under_lock_for_outcome(
-                [this](std::unique_lock <std::mutex> &l) -> PromiseOutcome<T> {
+                [this](std::unique_lock<std::mutex> &l) -> PromiseOutcome<T> {
                     if (is_done()) {
                         return get_outcome(false);
                     }
@@ -284,7 +284,7 @@ namespace async {
         }
 
         return execute_synchronous_under_lock_for_outcome(
-                [this, &timeout](std::unique_lock <std::mutex> &l) -> PromiseOutcome<T> {
+                [this, &timeout](std::unique_lock<std::mutex> &l) -> PromiseOutcome<T> {
                     if (is_done()) {
                         return get_outcome(false);
                     }
@@ -299,33 +299,33 @@ namespace async {
 
     template<typename T>
     bool Promise<T>::execute_synchronous_under_lock_for_bool(
-            const std::function<bool(std::unique_lock < std::mutex > &)> &callable) {
+            const std::function<bool(std::unique_lock<std::mutex> &)> &callable) {
         {
-            std::unique_lock <std::mutex> l(_main_lock);
+            std::unique_lock<std::mutex> l(_main_lock);
             return callable(l);
         }
     }
 
     template<typename T>
     PromiseOutcome<T> Promise<T>::execute_synchronous_under_lock_for_outcome(
-            const std::function<PromiseOutcome<T>(std::unique_lock < std::mutex > &)> &callable) {
+            const std::function<PromiseOutcome<T>(std::unique_lock<std::mutex> &)> &callable) {
         {
-            std::unique_lock <std::mutex> l(_main_lock);
+            std::unique_lock<std::mutex> l(_main_lock);
             return callable(l);
         }
     }
 
     template<typename T>
-    void Promise<T>::add_listener0(std::shared_ptr <PromiseListener> listener) {
+    void Promise<T>::add_listener0(std::shared_ptr<PromiseListener> listener) {
         {
-            std::lock_guard <std::mutex> l(_listener_lock);
+            std::lock_guard<std::mutex> l(_listener_lock);
             _listeners.push_back(std::make_shared<PromiseListenerWrapper<T>>(listener));
         }
     }
 
     template<typename T>
     void Promise<T>::notify_all_listeners() {
-        for (std::shared_ptr <PromiseListenerWrapper<T>> listener : _listeners) {
+        for (std::shared_ptr<PromiseListenerWrapper<T>> listener : _listeners) {
             try {
                 listener->operator()(*this);
             } catch (std::exception &ignored) {
@@ -345,7 +345,7 @@ namespace async {
     }
 
     template<typename T>
-    void Promise<T>::set_success_under_lock(std::shared_ptr <T> outcome) {
+    void Promise<T>::set_success_under_lock(std::shared_ptr<T> outcome) {
         // isDone is used to determine success, so the assignment of isDone must be at the end
         _is_done = true;
         _is_success = true;

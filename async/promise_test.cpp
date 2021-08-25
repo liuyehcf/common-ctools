@@ -19,7 +19,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#include "util/promise.h"
+#include "promise.h"
 
 #include <gtest/gtest.h>
 
@@ -484,7 +484,7 @@ namespace async {
             std::mutex lock;
             int count = 0;
 
-            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                 if (p.is_canceled()) {
                     std::lock_guard<std::mutex> l(lock);
                     count++;
@@ -519,7 +519,7 @@ namespace async {
 
             for (int j = 0; j < listener_num; j++) {
                 promise.add_listener(
-                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                             if (p.is_canceled()) {
                                 std::lock_guard<std::mutex> l(lock);
                                 count++;
@@ -540,7 +540,7 @@ namespace async {
             std::mutex lock;
             int count = 0;
 
-            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                 if (p.is_success() && p.get().ok() && *p.get().outcome() == expected_value) {
                     std::lock_guard<std::mutex> l(lock);
                     count++;
@@ -576,9 +576,9 @@ namespace async {
 
             for (int j = 0; j < listener_num; j++) {
                 promise.add_listener(
-                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                             if (p.is_success() && p.get().ok() &&
-                            *p.get().outcome() == expected_value) {
+                                *p.get().outcome() == expected_value) {
                                 std::lock_guard<std::mutex> l(lock);
                                 count++;
                             }
@@ -597,7 +597,7 @@ namespace async {
             std::mutex lock;
             int count = 0;
 
-            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+            promise.add_listener(std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                 if (p.is_failure() && p.cause() == "something wrong") {
                     std::lock_guard<std::mutex> l(lock);
                     count++;
@@ -632,7 +632,7 @@ namespace async {
 
             for (int j = 0; j < listener_num; j++) {
                 promise.add_listener(
-                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int>& p) {
+                        std::make_shared<Promise<int>::PromiseListener>([&](Promise<int> &p) {
                             if (p.is_failure() && p.cause() == "something wrong") {
                                 std::lock_guard<std::mutex> l(lock);
                                 count++;
